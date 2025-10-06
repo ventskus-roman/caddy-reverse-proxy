@@ -1,26 +1,31 @@
 :{$PORT} {
-  # (Опционально) CORS для WebView/веб-клиента
-  @preflight method OPTIONS
-  respond @preflight 204 {
-    header Access-Control-Allow-Origin "*"
-    header Access-Control-Allow-Headers "*"
-    header Access-Control-Allow-Methods "GET,POST,PUT,PATCH,DELETE,OPTIONS"
-  }
-  header {
-    Access-Control-Allow-Origin "*"
-  }
 
-  # Прокси на основной API kie.ai:
+  ##############################
+  # CORS для браузеров / WebView
+  ##############################
+
+  @options method OPTIONS
+  respond @options 204
+  header Access-Control-Allow-Origin "*" 
+  header Access-Control-Allow-Headers "*" 
+  header Access-Control-Allow-Methods "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+
+  ##############################
+  # Прокси на основной API KIE
+  ##############################
+
   handle_path /kie/* {
     reverse_proxy https://api.kie.ai {
-      # Снимаем клиентский Authorization и подставляем ваш
       header_up -Authorization
       header_up Authorization "Bearer {$KIE_API_KEY}"
       header_up Host api.kie.ai
     }
   }
 
-  # Прокси на File Upload API (у KIE другой хост):
+  ##############################
+  # Прокси на File Upload API
+  ##############################
+
   handle_path /upload/* {
     reverse_proxy https://kieai.redpandaai.co {
       header_up -Authorization
@@ -29,5 +34,8 @@
     }
   }
 
+  ##############################
+  # Заглушка на прочие пути
+  ##############################
   respond "Not found" 404
 }
