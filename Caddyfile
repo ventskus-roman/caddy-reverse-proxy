@@ -1,5 +1,5 @@
 :{$PORT} {
-  # ---- PRELIGHT (OPTIONS) для CORS ----
+  # CORS (если нужен для WebView/браузера)
   @options method OPTIONS
   handle @options {
     header Access-Control-Allow-Origin "*"
@@ -8,24 +8,25 @@
     respond 204
   }
 
-  # ---- Прокси на основной API kie.ai ----
+  # ----- Основной KIE API -----  https://api.kie.ai  (Bearer-токен обязателен)
   handle_path /kie/* {
+    # ВСТАВЛЯЕМ АВТОРИЗАЦИЮ ДО ПРОКСИ
+    request_header Authorization "Bearer {env.KIE_API_KEY}"
+
     reverse_proxy https://api.kie.ai {
-      header_up -Authorization
-      header_up Authorization "Bearer {$KIE_API_KEY}"
+      # Host на всякий случай фиксируем (обычно не обязателен)
       header_up Host api.kie.ai
     }
   }
 
-  # ---- Прокси на File Upload API kie.ai ----
+  # ----- File Upload API -----   https://kieai.redpandaai.co  (тоже Bearer)
   handle_path /upload/* {
+    request_header Authorization "Bearer {env.KIE_API_KEY}"
+
     reverse_proxy https://kieai.redpandaai.co {
-      header_up -Authorization
-      header_up Authorization "Bearer {$KIE_API_KEY}"
       header_up Host kieai.redpandaai.co
     }
   }
 
-  # ---- На всё остальное 404 (без поддиректив) ----
   respond 404
 }
