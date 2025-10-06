@@ -1,9 +1,6 @@
 :{$PORT} {
-
-  # Preflight-мэчер
+  # ---- PRELIGHT (OPTIONS) для CORS ----
   @options method OPTIONS
-
-  # Обрабатываем preflight: сначала ставим заголовки, потом просто 204
   handle @options {
     header Access-Control-Allow-Origin "*"
     header Access-Control-Allow-Headers "*"
@@ -11,7 +8,7 @@
     respond 204
   }
 
-  # Основной API kie.ai
+  # ---- Прокси на основной API kie.ai ----
   handle_path /kie/* {
     reverse_proxy https://api.kie.ai {
       header_up -Authorization
@@ -20,7 +17,7 @@
     }
   }
 
-  # Upload-хост kie.ai
+  # ---- Прокси на File Upload API kie.ai ----
   handle_path /upload/* {
     reverse_proxy https://kieai.redpandaai.co {
       header_up -Authorization
@@ -29,5 +26,6 @@
     }
   }
 
-  respond "Not found" 404
+  # ---- На всё остальное 404 (без поддиректив) ----
+  respond 404
 }
