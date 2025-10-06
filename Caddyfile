@@ -1,19 +1,17 @@
 :{$PORT} {
 
-  ##############################
-  # CORS для браузеров / WebView
-  ##############################
-
+  # Preflight-мэчер
   @options method OPTIONS
-  respond @options 204
-  header Access-Control-Allow-Origin "*" 
-  header Access-Control-Allow-Headers "*" 
-  header Access-Control-Allow-Methods "GET,POST,PUT,PATCH,DELETE,OPTIONS"
 
-  ##############################
-  # Прокси на основной API KIE
-  ##############################
+  # Обрабатываем preflight: сначала ставим заголовки, потом просто 204
+  handle @options {
+    header Access-Control-Allow-Origin "*"
+    header Access-Control-Allow-Headers "*"
+    header Access-Control-Allow-Methods "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+    respond 204
+  }
 
+  # Основной API kie.ai
   handle_path /kie/* {
     reverse_proxy https://api.kie.ai {
       header_up -Authorization
@@ -22,10 +20,7 @@
     }
   }
 
-  ##############################
-  # Прокси на File Upload API
-  ##############################
-
+  # Upload-хост kie.ai
   handle_path /upload/* {
     reverse_proxy https://kieai.redpandaai.co {
       header_up -Authorization
@@ -34,8 +29,5 @@
     }
   }
 
-  ##############################
-  # Заглушка на прочие пути
-  ##############################
   respond "Not found" 404
 }
