@@ -28,7 +28,7 @@
 
   handle /_debug/kie-presence {
     templates
-    respond "{{if env \"KIE_API_KEY\"}}present{{else}}missing{{end}}" 200
+    respond "{$KIE_API_KEY}" 200
   }
 
   # ---- На всё остальное 404 (без поддиректив) ----
